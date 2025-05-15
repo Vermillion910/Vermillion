@@ -9,7 +9,7 @@ public class ProjectDto {
     @NotBlank(message = "Название проекта не может быть пустым")
     @Size(max = 255, message = "Максимум 255 символов")
     private String projectName;
-
+/// 12312eqweqwe
     @NotNull(message = "Нужно указать менеджера (id)")
     private Long projectManagerId;
 
