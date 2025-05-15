@@ -2,10 +2,13 @@ package com.example.vermillion.Config;
 
 import com.example.vermillion.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity; // ← добавляем
-import org.springframework.security.core.userdetails.*;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -21,30 +24,63 @@ public class SecurityConfig {
         return username -> userRepository.findByUsername(username)
                 .map(u -> User.withUsername(u.getUsername())
                         .password(u.getPassword())
-                        .roles(u.getRole().substring(5))
+                        .roles(u.getRole().substring(5)) // ROLE_ADMIN -> ADMIN
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/register", "/login", "/css/**", "/js/**").permitAll()
+                        // Разрешаем доступ всем
+                        .requestMatchers(
+                                "/register",
+                                "/login",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        // Требуем аутентификации для профиля и настроек
+                        .requestMatchers(
+                                "/profile",
+                                "/settings/**",
+                                "/avatar/upload"
+                        ).authenticated()
+                        // Админские пути
+                        .requestMatchers(
+                                "/admin/**","/developers/**",
+                                "/users/**","/projects/**","/admin/**","/roles/**","/tasks/**"
+                        ).hasRole("ADMIN")
+                        // Все остальные запросы требуют аутентификации
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/", true) // Перенаправление на главную после входа
+                        .defaultSuccessUrl("/") // Перенаправление на главную после входа
                         .permitAll()
                 )
+                .rememberMe(remember -> remember
+                        .key("uniqueAndSecretKeyForRememberMe") // Секретный ключ
+                        .tokenValiditySeconds(86400) // 24 часа
+                        .userDetailsService(userDetailsService())
+                )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/login?logout")
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout") // Перенаправление после выхода
+                        .deleteCookies("JSESSIONID", "remember-me") // Удаление куков
+                        .permitAll()
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedPage("/access-denied") // Страница для ошибок доступа
                 );
+
         return http.build();
-    }
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }

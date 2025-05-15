@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final UserService userService;
 
+
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("userDto", new UserDto());
