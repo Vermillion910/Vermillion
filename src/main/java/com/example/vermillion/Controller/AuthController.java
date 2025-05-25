@@ -4,6 +4,8 @@ import com.example.vermillion.DTO.UserDto;
 import com.example.vermillion.Service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,9 +16,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final UserService userService;
 
-
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/";
+        }
         model.addAttribute("userDto", new UserDto());
         return "auth/register";
     }
@@ -43,6 +48,11 @@ public class AuthController {
                                 @RequestParam(required = false) String logout,
                                 @RequestParam(required = false) String success,
                                 Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/";
+        }
+
         if (error != null) model.addAttribute("error", "Неверные данные");
         if (logout != null) model.addAttribute("msg", "Вы вышли");
         if (success != null) model.addAttribute("msg", "Регистрация прошла успешно!");

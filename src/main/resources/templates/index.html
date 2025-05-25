@@ -208,30 +208,35 @@
                 <h5 class="modal-title" id="profileModalLabel">Мой профиль</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <img src="https://ui-avatars.com/api/?name=User&background=random"
-                         alt="Аватар" class="profile-img" style="width: 100px; height: 100px;">
-                    <h4 class="mt-3" sec:authentication="name"></h4>
-                </div>
+            <form th:action="@{/profile/update}" method="post">
+                <div class="modal-body">
+                    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                    
+                    <div class="text-center mb-4">
+                        <img src="https://ui-avatars.com/api/?name=User&background=random"
+                             alt="Аватар" class="profile-img" style="width: 100px; height: 100px;">
+                        <h4 class="mt-3" sec:authentication="name"></h4>
+                    </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Имя пользователя</label>
-                    <input type="text" class="form-control" sec:authentication="name" readonly>
+                    <div class="mb-3">
+                        <label class="form-label">Имя пользователя</label>
+                        <input type="text" class="form-control" name="username" th:value="${#authentication.name}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Роль</label>
+                        <input type="text" class="form-control" th:value="${#authentication?.authorities}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Дата регистрации</label>
+                        <input type="text" class="form-control" value="12 мая 2025" readonly>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Роль</label>
-                    <input type="text" class="form-control" th:value="${#authentication?.authorities}" readonly>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Дата регистрации</label>
-                    <input type="text" class="form-control" value="12 мая 2025" readonly>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                <button type="button" class="btn btn-primary">Сохранить изменения</button>
-            </div>
+            </form>
         </div>
     </div>
 </div>

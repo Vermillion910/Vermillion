@@ -25,7 +25,17 @@
         </div>
         <div class="col-md-6">
             <label class="form-label">Название роли</label>
-            <input type="text" th:field="*{roleName}" class="form-control" required maxlength="255"/>
+            <select th:field="*{roleName}" class="form-select" required>
+                <option value="">Выберите роль</option>
+                <option value="Project Manager">Менеджер проекта</option>
+                <option value="Team Lead">Тимлид</option>
+                <option value="Senior Developer">Старший разработчик</option>
+                <option value="Middle Developer">Разработчик</option>
+                <option value="Junior Developer">Младший разработчик</option>
+                <option value="QA Engineer">Тестировщик</option>
+                <option value="Business Analyst">Бизнес-аналитик</option>
+                <option value="Ceкретутка">Ceкретутка</option>
+            </select>
         </div>
         <div class="col-12">
             <button type="submit" class="btn btn-success">Сохранить</button>
