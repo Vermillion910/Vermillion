@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/> <!-- адаптивность :contentReference[oaicite:3]{index=3} -->
-    <title th:text="${project.projectId} != null ? 'Редактировать проект' : 'Новый проект'">Форма проекта</title>
+    <title th:text="${project.projectId} != null ? 'Редактировать проект | Vermillion' : 'Новый проект | Vermillion'">Форма проекта</title>
 
     <!-- Bootstrap 5.3.6 CSS -->
     <link
@@ -12,8 +12,99 @@
             integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
             crossorigin="anonymous"
     /> <!-- SRI для CSS  -->
+    <!-- Font Awesome для иконок -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .dropdown-toggle::after {
+            display: none;
+        }
+    </style>
 </head>
 <body class="bg-light">
+<!-- Навигационная панель -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-tasks me-2"></i>Vermillion
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/developers}">
+                        <i class="fas fa-users me-1"></i> Разработчики
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/projects}">
+                        <i class="fas fa-project-diagram me-1"></i> Проекты
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/tasks}">
+                        <i class="fas fa-tasks me-1"></i> Задачи
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/roles}">
+                        <i class="fas fa-user-tag me-1"></i> Роли
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/user-guide}">
+                        <i class="fas fa-book me-1"></i> Руководство
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Профиль пользователя -->
+            <div class="dropdown" sec:authorize="isAuthenticated()">
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+                   id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="https://ui-avatars.com/api/?name=User&background=random" alt="Аватар" class="profile-img me-2">
+                    <span sec:authentication="name"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownUser">
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">
+                            <i class="fas fa-user-circle me-2"></i> Профиль
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                            <i class="fas fa-camera me-2"></i> Сменить аватар
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit" class="dropdown-item">
+                                <i class="fas fa-sign-out-alt me-2"></i> Выйти
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Кнопки входа/регистрации для неавторизованных -->
+            <div sec:authorize="!isAuthenticated()">
+                <a th:href="@{/login}" class="btn btn-outline-light me-2">Вход</a>
+                <a th:href="@{/register}" class="btn btn-primary">Регистрация</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
 <div class="container py-4">
     <h1 class="h3 mb-4" th:text="${project.projectId} != null ? 'Редактировать проект' : 'Новый проект'"></h1>
     <form th:action="@{/projects/save}" th:object="${project}" method="post" class="row g-3">

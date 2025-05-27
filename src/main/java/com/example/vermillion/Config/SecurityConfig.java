@@ -47,16 +47,16 @@ public class SecurityConfig {
                                 "/images/**",
                                 "/webjars/**"
                         ).permitAll()
-                        // Требуем аутентификации для профиля и настроек
-                        .requestMatchers(
-                                "/profile",
-                                "/settings/**",
-                                "/avatar/upload"
-                        ).authenticated()
                         // Админские пути
                         .requestMatchers(
-                                "/admin/**","/developers/**",
-                                "/users/**","/projects/**","/admin/**","/roles/**","/tasks/**"
+                                "/admin/**",
+                                "/developers/**",
+                                "/users/**",
+                                "/projects/**",
+                                "/roles/**",
+                                "/tasks/**",
+                                "/profile/**",
+                                "/settings/**"
                         ).hasRole("ADMIN")
                         // Все остальные запросы требуют аутентификации
                         .anyRequest().authenticated()

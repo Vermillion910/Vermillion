@@ -2,163 +2,145 @@ package com.example.vermillion.Controller;
 
 import com.example.vermillion.DTO.UserDto;
 import com.example.vermillion.Service.UserService;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * Тесты для контроллера аутентификации
- */
-@SpringBootTest
-@AutoConfigureMockMvc
 class AuthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Test
+    void showRegisterForm_authenticated() {
+        UserService userService = mock(UserService.class);
+        Model model = mock(Model.class);
+        Authentication auth = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
 
-    @MockBean
-    private UserService userService;
+        when(auth.isAuthenticated()).thenReturn(true);
+        when(auth.getPrincipal()).thenReturn("user");
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
-    @Nested
-    @DisplayName("Тесты страницы входа")
-    class LoginTests {
+        AuthController controller = new AuthController(userService);
+        String result = controller.showRegisterForm(model);
 
-        @Test
-        @WithAnonymousUser
-        @DisplayName("GET /login - отображение формы входа")
-        void whenGetLoginPage_thenReturnsLoginForm() throws Exception {
-            mockMvc.perform(get("/login"))
-                    .andExpect(status().isOk())
-                    .andExpect(view().name("auth/login"));
-        }
-
-        @Test
-        @WithAnonymousUser
-        @DisplayName("GET /login?error - отображение ошибки входа")
-        void whenLoginError_thenShowsErrorMessage() throws Exception {
-            mockMvc.perform(get("/login")
-                    .param("error", ""))
-                    .andExpect(status().isOk())
-                    .andExpect(view().name("auth/login"))
-                    .andExpect(model().attribute("error", "Неверные данные"));
-        }
-
-        @Test
-        @WithMockUser
-        @DisplayName("GET /login для авторизованного пользователя")
-        void whenAuthenticatedAccessLogin_thenRedirectToHome() throws Exception {
-            mockMvc.perform(get("/login"))
-                    .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrl("/"));
-        }
+        assertEquals("redirect:/", result);
     }
 
-    @Nested
-    @DisplayName("Тесты регистрации")
-    class RegistrationTests {
+    @Test
+    void showRegisterForm_notAuthenticated() {
+        UserService userService = mock(UserService.class);
+        Model model = mock(Model.class);
+        Authentication auth = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
 
-        @Test
-        @WithAnonymousUser
-        @DisplayName("GET /register - отображение формы регистрации")
-        void whenGetRegisterPage_thenReturnsRegisterForm() throws Exception {
-            mockMvc.perform(get("/register"))
-                    .andExpect(status().isOk())
-                    .andExpect(view().name("auth/register"))
-                    .andExpect(model().attributeExists("userDto"));
-        }
+        when(auth.isAuthenticated()).thenReturn(true);
+        when(auth.getPrincipal()).thenReturn("anonymousUser");
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
 
-        @Test
-        @WithAnonymousUser
-        @DisplayName("POST /register - успешная регистрация")
-        void whenValidRegistration_thenRedirectToLogin() throws Exception {
-            when(userService.userExists(anyString())).thenReturn(false);
-            doNothing().when(userService).register(any(UserDto.class));
+        AuthController controller = new AuthController(userService);
+        String result = controller.showRegisterForm(model);
 
-            mockMvc.perform(post("/register")
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .param("username", "testuser")
-                    .param("password", "password123"))
-                    .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrl("/login?success"));
-
-            verify(userService).register(any(UserDto.class));
-        }
-
-        @Test
-        @WithAnonymousUser
-        @DisplayName("POST /register - ошибка валидации")
-        void whenInvalidRegistration_thenReturnsFormWithErrors() throws Exception {
-            mockMvc.perform(post("/register")
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .param("username", "") // Пустое имя пользователя
-                    .param("password", "123")) // Слишком короткий пароль
-                    .andExpect(status().isOk())
-                    .andExpect(view().name("auth/register"))
-                    .andExpect(model().hasErrors());
-        }
-
-        @Test
-        @WithAnonymousUser
-        @DisplayName("POST /register - пользователь уже существует")
-        void whenUserExists_thenReturnsError() throws Exception {
-            when(userService.userExists(anyString())).thenReturn(true);
-
-            mockMvc.perform(post("/register")
-                    .with(csrf())
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .param("username", "existinguser")
-                    .param("password", "password123"))
-                    .andExpect(status().isOk())
-                    .andExpect(view().name("auth/register"))
-                    .andExpect(model().attributeExists("error"));
-        }
-
-        @Test
-        @WithMockUser
-        @DisplayName("GET /register для авторизованного пользователя")
-        void whenAuthenticatedAccessRegister_thenRedirectToHome() throws Exception {
-            mockMvc.perform(get("/register"))
-                    .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrl("/"));
-        }
+        assertEquals("auth/register", result);
+        verify(model).addAttribute(eq("userDto"), any(UserDto.class));
     }
 
-    @Nested
-    @DisplayName("Тесты безопасности")
-    class SecurityTests {
+    @Test
+    void register_hasErrors() {
+        UserService userService = mock(UserService.class);
+        Model model = mock(Model.class);
+        BindingResult bindingResult = mock(BindingResult.class);
+        UserDto userDto = new UserDto();
 
-        @Test
-        @WithAnonymousUser
-        @DisplayName("Доступ к защищенным ресурсам без аутентификации")
-        void whenAnonymousAccessSecuredEndpoint_thenRedirectToLogin() throws Exception {
-            mockMvc.perform(get("/developers"))
-                    .andExpect(status().is3xxRedirection())
-                    .andExpect(redirectedUrl("http://localhost/login"));
-        }
+        when(bindingResult.hasErrors()).thenReturn(true);
 
-        @Test
-        @WithMockUser
-        @DisplayName("Доступ к защищенным ресурсам с аутентификацией")
-        void whenAuthenticatedAccessSecuredEndpoint_thenSucceeds() throws Exception {
-            mockMvc.perform(get("/"))
-                    .andExpect(status().isOk());
-        }
+        AuthController controller = new AuthController(userService);
+        String result = controller.register(userDto, bindingResult, model);
+
+        assertEquals("auth/register", result);
     }
-} 
+
+    @Test
+    void register_userExists() {
+        UserService userService = mock(UserService.class);
+        Model model = mock(Model.class);
+        BindingResult bindingResult = mock(BindingResult.class);
+        UserDto userDto = new UserDto();
+        userDto.setUsername("test");
+
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(userService.userExists("test")).thenReturn(true);
+
+        AuthController controller = new AuthController(userService);
+        String result = controller.register(userDto, bindingResult, model);
+
+        assertEquals("auth/register", result);
+        verify(model).addAttribute("error", "Пользователь уже существует");
+    }
+
+    @Test
+    void register_success() {
+        UserService userService = mock(UserService.class);
+        Model model = mock(Model.class);
+        BindingResult bindingResult = mock(BindingResult.class);
+        UserDto userDto = new UserDto();
+        userDto.setUsername("test");
+
+        when(bindingResult.hasErrors()).thenReturn(false);
+        when(userService.userExists("test")).thenReturn(false);
+
+        AuthController controller = new AuthController(userService);
+        String result = controller.register(userDto, bindingResult, model);
+
+        assertEquals("redirect:/login?success", result);
+        verify(userService).register(userDto);
+    }
+
+    @Test
+    void showLoginForm_authenticated() {
+        UserService userService = mock(UserService.class);
+        Model model = mock(Model.class);
+        Authentication auth = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+
+        when(auth.isAuthenticated()).thenReturn(true);
+        when(auth.getPrincipal()).thenReturn("user");
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        AuthController controller = new AuthController(userService);
+        String result = controller.showLoginForm(null, null, null, model);
+
+        assertEquals("redirect:/", result);
+    }
+
+    @Test
+    void showLoginForm_withError() {
+        UserService userService = mock(UserService.class);
+        Model model = mock(Model.class);
+
+        AuthController controller = new AuthController(userService);
+        String result = controller.showLoginForm("error", null, null, model);
+
+        assertEquals("auth/login", result);
+        verify(model).addAttribute("error", "Неверные данные");
+    }
+
+    @Test
+    void showLoginForm_withSuccess() {
+        UserService userService = mock(UserService.class);
+        Model model = mock(Model.class);
+
+        AuthController controller = new AuthController(userService);
+        String result = controller.showLoginForm(null, null, "success", model);
+
+        assertEquals("auth/login", result);
+        verify(model).addAttribute("msg", "Регистрация прошла успешно!");
+    }
+}

@@ -4,90 +4,135 @@ import com.example.vermillion.DTO.RoleDto;
 import com.example.vermillion.Model.Role;
 import com.example.vermillion.Service.RoleService;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.ui.Model;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@WebMvcTest(RoleController.class)
-public class RoleControllerTest {
+class RoleControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    private final RoleService roleService = mock(RoleService.class);
+    private final RoleController controller = new RoleController(roleService);
+    private final Model model = mock(Model.class);
 
-    @MockBean
-    private RoleService roleService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
+    // HTML/Thymeleaf endpoints
     @Test
-    public void testGetAllRoles() throws Exception {
-        // Подготавливаем тестовые данные
-        Role role1 = new Role();
-        role1.setId(1L);
-        role1.setRoleName("Developer");
+    void listRoles_ShouldAddAttributesAndReturnView() {
+        when(roleService.findAll()).thenReturn(List.of(new Role()));
+        when(roleService.findAllDevelopers()).thenReturn(List.of());
 
-        Role role2 = new Role();
-        role2.setId(2L);
-        role2.setRoleName("Manager");
+        String viewName = controller.listRoles(model);
 
-        when(roleService.findAll()).thenReturn(Arrays.asList(role1, role2));
-
-        // Проверяем API метод
-        mockMvc.perform(get("/roles/api"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].roleName").value("Developer"))
-                .andExpect(jsonPath("$[1].roleName").value("Manager"));
+        assertEquals("roles/list", viewName);
+        verify(model).addAttribute("roles", roleService.findAll());
+        verify(model).addAttribute("developers", roleService.findAllDevelopers());
     }
 
     @Test
-    public void testCreateRole() throws Exception {
-        // Подготавливаем тестовые данные
-        RoleDto roleDto = new RoleDto();
-        roleDto.setRoleName("Developer");
-        roleDto.setDeveloperId(1L);
+    void showForm_WithoutId_ShouldAddNewRole() {
+        when(roleService.findAllDevelopers()).thenReturn(List.of());
 
-        Role createdRole = new Role();
-        createdRole.setId(1L);
-        createdRole.setRoleName("Developer");
+        String viewName = controller.showForm(null, model);
 
-        when(roleService.create(any(RoleDto.class))).thenReturn(createdRole);
-
-        // Проверяем создание роли через API
-        mockMvc.perform(post("/roles/api")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(roleDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.roleName").value("Developer"));
+        assertEquals("roles/form", viewName);
+        verify(model).addAttribute(eq("role"), any(Role.class));
+        verify(model).addAttribute("developers", roleService.findAllDevelopers());
     }
 
     @Test
-    public void testDeleteRole() throws Exception {
+    void showForm_WithId_ShouldAddExistingRole() {
+        Role role = new Role();
+        role.setId(1L);
+        when(roleService.findById(1L)).thenReturn(Optional.of(role));
+        when(roleService.findAllDevelopers()).thenReturn(List.of());
+
+        String viewName = controller.showForm(1L, model);
+
+        assertEquals("roles/form", viewName);
+        verify(model).addAttribute("role", role);
+        verify(model).addAttribute("developers", roleService.findAllDevelopers());
+    }
+
+    @Test
+    void saveRole_ShouldCallServiceAndRedirect() {
+        Role role = new Role();
+
+        String viewName = controller.saveRole(role);
+
+        assertEquals("redirect:/roles", viewName);
+        verify(roleService).saveEntity(role);
+    }
+
+    @Test
+    void deleteRole_ShouldCallServiceAndRedirect() {
+        String viewName = controller.deleteRole(1L);
+
+        assertEquals("redirect:/roles", viewName);
+        verify(roleService).delete(1L);
+    }
+
+    // API endpoints
+    @Test
+    void apiGetAll_ShouldReturnAllRoles() {
+        List<Role> roles = List.of(new Role());
+        when(roleService.findAll()).thenReturn(roles);
+
+        List<Role> result = controller.apiGetAll();
+
+        assertEquals(roles, result);
+    }
+
+    @Test
+    void apiGetById_ShouldReturnRole() {
+        Role role = new Role();
+        when(roleService.findById(1L)).thenReturn(Optional.of(role));
+
+        Role result = controller.apiGetById(1L);
+
+        assertEquals(role, result);
+    }
+
+    @Test
+    void apiCreate_ShouldReturnCreatedRole() {
+        RoleDto dto = new RoleDto();
+        Role role = new Role();
+        when(roleService.create(dto)).thenReturn(role);
+
+        Role result = controller.apiCreate(dto);
+
+        assertEquals(role, result);
+    }
+
+    @Test
+    void apiUpdate_ShouldReturnUpdatedRole() {
+        RoleDto dto = new RoleDto();
+        Role role = new Role();
+        when(roleService.update(1L, dto)).thenReturn(Optional.of(role));
+
+        Role result = controller.apiUpdate(1L, dto);
+
+        assertEquals(role, result);
+    }
+
+    @Test
+    void apiDelete_ShouldCallServiceAndNotThrowWhenRoleExists() {
         when(roleService.delete(1L)).thenReturn(true);
 
-        // Проверяем удаление роли
-        mockMvc.perform(delete("/roles/api/1"))
-                .andExpect(status().isOk());
+        assertDoesNotThrow(() -> controller.apiDelete(1L));
+        verify(roleService).delete(1L);
     }
 
     @Test
-    public void testShowRolesList() throws Exception {
-        // Проверяем отображение списка ролей
-        mockMvc.perform(get("/roles"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("roles/list"));
+    void apiDelete_ShouldThrowWhenRoleNotFound() {
+        when(roleService.delete(1L)).thenReturn(false);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> controller.apiDelete(1L));
+
+        assertEquals("Role not found: 1", exception.getMessage());
+        verify(roleService).delete(1L);
     }
-} 
+}

@@ -23,7 +23,15 @@ public class UserService {
         User user = new User();
         user.setUsername(userDto.getUsername());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setRole(userDto.getRole());
+        
+        // Проверяем, есть ли уже пользователи в системе
+        if (userRepository.count() == 0) {
+            // Если это первый пользователь, назначаем ему роль администратора
+            user.setRole("ROLE_ADMIN");
+        } else {
+            user.setRole(userDto.getRole());
+        }
+        
         userRepository.save(user);
     }
 
@@ -35,4 +43,5 @@ public class UserService {
                     userRepository.save(user);
                 });
     }
+  
 }
