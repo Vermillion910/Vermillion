@@ -20,39 +20,7 @@ public class ProjectController {
 
     // ========== API (JSON) ==========
 
-    @GetMapping("/api")
-    @ResponseBody
-    public List<Project> apiGetAll() {
-        return projectService.findAll();
-    }
 
-    @GetMapping("/api/{id}")
-    @ResponseBody
-    public Project apiGetById(@PathVariable Long id) {
-        return projectService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
-    }
-
-    @PostMapping("/api")
-    @ResponseBody
-    public Project apiCreate(@RequestBody ProjectDto dto) {
-        return projectService.create(dto);
-    }
-
-    @PutMapping("/api/{id}")
-    @ResponseBody
-    public Project apiUpdate(@PathVariable Long id, @RequestBody ProjectDto dto) {
-        return projectService.update(id, dto)
-                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
-    }
-
-    @DeleteMapping("/api/{id}")
-    @ResponseBody
-    public void apiDelete(@PathVariable Long id) {
-        if (!projectService.delete(id)) {
-            throw new IllegalArgumentException("Project not found");
-        }
-    }
 
     // ========== HTML (Thymeleaf) ==========
 

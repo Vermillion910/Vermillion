@@ -77,56 +77,5 @@ class TaskControllerTest {
     }
 
     // API endpoints
-    @Test
-    void apiGetAll_ShouldReturnAllTasks() {
-        List<Task> tasks = List.of(new Task());
-        when(taskService.findAll()).thenReturn(tasks);
 
-        List<Task> result = controller.apiGetAll();
-
-        assertEquals(tasks, result);
-    }
-
-    @Test
-    void apiGetById_ShouldReturnTask() {
-        Task task = new Task();
-        when(taskService.findById(1L)).thenReturn(Optional.of(task));
-
-        Task result = controller.apiGetById(1L);
-
-        assertEquals(task, result);
-    }
-
-    @Test
-    void apiCreate_ShouldReturnCreatedTask() {
-        TaskDto dto = new TaskDto();
-        Task task = new Task();
-        when(taskService.create(dto)).thenReturn(task);
-
-        Task result = controller.apiCreate(dto);
-
-        assertEquals(task, result);
-    }
-
-    @Test
-    void apiUpdate_ShouldReturnUpdatedTask() {
-        TaskDto dto = new TaskDto();
-        Task task = new Task();
-        when(taskService.update(1L, dto)).thenReturn(Optional.of(task));
-
-        Task result = controller.apiUpdate(1L, dto);
-
-        assertEquals(task, result);
-    }
-
-    @Test
-    void apiDelete_ShouldThrowWhenTaskNotFound() {
-        when(taskService.delete(1L)).thenReturn(false);
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            controller.apiDelete(1L);
-        });
-
-        verify(taskService).delete(1L);
-    }
 }

@@ -52,28 +52,7 @@ class ProjectControllerTest {
         verify(service).saveEntity(project);
     }
 
-    @Test
-    void apiGetAll() {
-        ProjectService service = mock(ProjectService.class);
-        when(service.findAll()).thenReturn(List.of(new Project()));
 
-        ProjectController controller = new ProjectController(service);
-        List<Project> result = controller.apiGetAll();
 
-        assertNotNull(result);
-        verify(service).findAll();
-    }
 
-    @Test
-    void apiCreate() {
-        ProjectService service = mock(ProjectService.class);
-        ProjectDto dto = new ProjectDto();
-        Project project = new Project();
-        when(service.create(dto)).thenReturn(project);
-
-        ProjectController controller = new ProjectController(service);
-        Project result = controller.apiCreate(dto);
-
-        assertEquals(project, result);
-    }
 }

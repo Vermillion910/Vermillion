@@ -20,39 +20,7 @@ public class RoleController {
 
     // ====== API JSON ======
 
-    @GetMapping("/api")
-    @ResponseBody
-    public List<Role> apiGetAll() {
-        return roleService.findAll();
-    }
 
-    @GetMapping("/api/{id}")
-    @ResponseBody
-    public Role apiGetById(@PathVariable Long id) {
-        return roleService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found: " + id));
-    }
-
-    @PostMapping("/api")
-    @ResponseBody
-    public Role apiCreate(@RequestBody RoleDto dto) {
-        return roleService.create(dto);
-    }
-
-    @PutMapping("/api/{id}")
-    @ResponseBody
-    public Role apiUpdate(@PathVariable Long id, @RequestBody RoleDto dto) {
-        return roleService.update(id, dto)
-                .orElseThrow(() -> new IllegalArgumentException("Role not found: " + id));
-    }
-
-    @DeleteMapping("/api/{id}")
-    @ResponseBody
-    public void apiDelete(@PathVariable Long id) {
-        if (!roleService.delete(id)) {
-            throw new IllegalArgumentException("Role not found: " + id);
-        }
-    }
 
     // ====== HTML/Thymeleaf ======
 

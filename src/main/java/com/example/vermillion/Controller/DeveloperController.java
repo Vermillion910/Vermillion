@@ -18,41 +18,6 @@ public class DeveloperController {
 
     private final DeveloperService developerService;
 
-    // ====== API JSON ======
-
-    @GetMapping("/api")
-    @ResponseBody
-    public List<Developer> apiGetAll() {
-        return developerService.findAll();
-    }
-
-    @GetMapping("/api/{id}")
-    @ResponseBody
-    public Developer apiGetById(@PathVariable Long id) {
-        return developerService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Developer not found: " + id));
-    }
-
-    @PostMapping("/api")
-    @ResponseBody
-    public Developer apiCreate(@RequestBody DeveloperDto dto) {
-        return developerService.create(dto);
-    }
-
-    @PutMapping("/api/{id}")
-    @ResponseBody
-    public Developer apiUpdate(@PathVariable Long id, @RequestBody DeveloperDto dto) {
-        return developerService.update(id, dto)
-                .orElseThrow(() -> new IllegalArgumentException("Developer not found: " + id));
-    }
-
-    @DeleteMapping("/api/{id}")
-    @ResponseBody
-    public void apiDelete(@PathVariable Long id) {
-        if (!developerService.delete(id)) {
-            throw new IllegalArgumentException("Developer not found: " + id);
-        }
-    }
 
     // ====== HTML/Thymeleaf ======
 

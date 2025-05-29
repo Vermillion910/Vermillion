@@ -74,65 +74,7 @@ class RoleControllerTest {
         verify(roleService).delete(1L);
     }
 
-    // API endpoints
-    @Test
-    void apiGetAll_ShouldReturnAllRoles() {
-        List<Role> roles = List.of(new Role());
-        when(roleService.findAll()).thenReturn(roles);
 
-        List<Role> result = controller.apiGetAll();
 
-        assertEquals(roles, result);
-    }
 
-    @Test
-    void apiGetById_ShouldReturnRole() {
-        Role role = new Role();
-        when(roleService.findById(1L)).thenReturn(Optional.of(role));
-
-        Role result = controller.apiGetById(1L);
-
-        assertEquals(role, result);
-    }
-
-    @Test
-    void apiCreate_ShouldReturnCreatedRole() {
-        RoleDto dto = new RoleDto();
-        Role role = new Role();
-        when(roleService.create(dto)).thenReturn(role);
-
-        Role result = controller.apiCreate(dto);
-
-        assertEquals(role, result);
-    }
-
-    @Test
-    void apiUpdate_ShouldReturnUpdatedRole() {
-        RoleDto dto = new RoleDto();
-        Role role = new Role();
-        when(roleService.update(1L, dto)).thenReturn(Optional.of(role));
-
-        Role result = controller.apiUpdate(1L, dto);
-
-        assertEquals(role, result);
-    }
-
-    @Test
-    void apiDelete_ShouldCallServiceAndNotThrowWhenRoleExists() {
-        when(roleService.delete(1L)).thenReturn(true);
-
-        assertDoesNotThrow(() -> controller.apiDelete(1L));
-        verify(roleService).delete(1L);
-    }
-
-    @Test
-    void apiDelete_ShouldThrowWhenRoleNotFound() {
-        when(roleService.delete(1L)).thenReturn(false);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> controller.apiDelete(1L));
-
-        assertEquals("Role not found: 1", exception.getMessage());
-        verify(roleService).delete(1L);
-    }
 }

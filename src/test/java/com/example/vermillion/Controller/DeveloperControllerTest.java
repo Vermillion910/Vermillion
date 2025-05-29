@@ -1,6 +1,6 @@
 package com.example.vermillion.Controller;
 
-import com.example.vermillion.DTO.DeveloperDto;
+
 import com.example.vermillion.Model.Developer;
 import com.example.vermillion.Service.DeveloperService;
 import org.junit.jupiter.api.Test;
@@ -76,63 +76,11 @@ class DeveloperControllerTest {
         verify(service).delete(1L);
     }
 
-    @Test
-    void apiGetAll() {
-        DeveloperService service = mock(DeveloperService.class);
-        when(service.findAll()).thenReturn(List.of(new Developer()));
 
-        DeveloperController controller = new DeveloperController(service);
-        List<Developer> result = controller.apiGetAll();
-
-        assertNotNull(result);
-        verify(service).findAll();
-    }
-
-    @Test
-    void apiGetById() {
-        DeveloperService service = mock(DeveloperService.class);
-        Developer dev = new Developer();
-        when(service.findById(1L)).thenReturn(Optional.of(dev));
-
-        DeveloperController controller = new DeveloperController(service);
-        Developer result = controller.apiGetById(1L);
-
-        assertEquals(dev, result);
-    }
-
-    @Test
-    void apiCreate() {
-        DeveloperService service = mock(DeveloperService.class);
-        DeveloperDto dto = new DeveloperDto();
-        Developer dev = new Developer();
-        when(service.create(dto)).thenReturn(dev);
-
-        DeveloperController controller = new DeveloperController(service);
-        Developer result = controller.apiCreate(dto);
-
-        assertEquals(dev, result);
-    }
-
-    @Test
-    void apiUpdate() {
-        DeveloperService service = mock(DeveloperService.class);
-        DeveloperDto dto = new DeveloperDto();
-        Developer dev = new Developer();
-        when(service.update(1L, dto)).thenReturn(Optional.of(dev));
-
-        DeveloperController controller = new DeveloperController(service);
-        Developer result = controller.apiUpdate(1L, dto);
-
-        assertEquals(dev, result);
-    }
-
-    @Test
-    void apiDelete() {
-        DeveloperService service = mock(DeveloperService.class);
-
-        DeveloperController controller = new DeveloperController(service);
-        controller.apiDelete(1L);
-
-        verify(service).delete(1L);
-    }
 }
+
+
+
+
+
+

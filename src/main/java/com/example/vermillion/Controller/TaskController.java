@@ -20,39 +20,7 @@ public class TaskController {
 
     // ====== API JSON ======
 
-    @GetMapping("/api")
-    @ResponseBody
-    public List<Task> apiGetAll() {
-        return taskService.findAll();
-    }
 
-    @GetMapping("/api/{id}")
-    @ResponseBody
-    public Task apiGetById(@PathVariable Long id) {
-        return taskService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Task not found: " + id));
-    }
-
-    @PostMapping("/api")
-    @ResponseBody
-    public Task apiCreate(@RequestBody TaskDto dto) {
-        return taskService.create(dto);
-    }
-
-    @PutMapping("/api/{id}")
-    @ResponseBody
-    public Task apiUpdate(@PathVariable Long id, @RequestBody TaskDto dto) {
-        return taskService.update(id, dto)
-                .orElseThrow(() -> new IllegalArgumentException("Task not found: " + id));
-    }
-
-    @DeleteMapping("/api/{id}")
-    @ResponseBody
-    public void apiDelete(@PathVariable Long id) {
-        if (!taskService.delete(id)) {
-            throw new IllegalArgumentException("Task not found: " + id);
-        }
-    }
 
     // ====== HTML/Thymeleaf ======
 
